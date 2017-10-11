@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PhpIncludePathManager">
+    <include_path>
+      <path value="$PROJECT_DIR$/../../virtual_host/www/wordpress" />
+    </include_path>
+  </component>
+  <component name="PhpProjectServersManager">
+    <servers>
+      <server host="localhost" id="de992011-2bc8-4f66-a2e1-cd0692b0c1ec" name="localhost" />
+    </servers>
+  </component>
+</project>
