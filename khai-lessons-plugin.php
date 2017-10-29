@@ -134,50 +134,117 @@ function khLess_options_page_html()
         if ($_FILES['file']['name'] != '' && $_FILES['file']['error'] == 0) { //проверяем загрузился указаный фаил или нет
             $info = pathinfo($_FILES['file']['name']);
             //копируем полученный csv фаил в папку catalog в корне сайта
-            if (copy($_FILES['file']['tmp_name'], $_SERVER['DOCUMENT_ROOT'] . '/wordpress/schedule' . $info['extension'])) {
+            if (copy($_FILES['file']['tmp_name'], $_SERVER['DOCUMENT_ROOT'] . '/wordpress/schedule.' . $info['extension'])) {
                 // создаем в базе таблицу, если же он есть то пропускаем этот шаг.
                 require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 
-                $table_name = $wpdb->prefix . "schedule";
 
 
-                $file = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/wordpress/schedule' . $info['extension'], true);
-                $xmlObject = simplexml_load_string($file);
-                $json = json_encode($xmlObject);
-                $array = json_decode($json, TRUE);
+                $file = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/wordpress/schedule.' . $info['extension'], true);
+
+                if ($file) {
+                    $xmlObject = simplexml_load_string($file);
+                    $json = json_encode($xmlObject);
+                    $array = json_decode($json, TRUE);
+                    $lessons = $array['Lesson'];
 
 
-                $sql = "DROP TABLE `" . $table_name . "`";
-                $wpdb->query($sql);
-                if ($wpdb->get_var("SHOW TABLES LIKE $table_name") != $table_name) {
-                    $sql = "CREATE TABLE IF NOT EXISTS `$table_name` (
+                    $table_name = $wpdb->prefix . "schedule";
+
+
+                    $sql = "DROP TABLE `" . $table_name . "`";
+                    $wpdb->query($sql);
+                    if ($wpdb->get_var("SHOW TABLES LIKE $table_name") != $table_name) {
+                        $sql = "CREATE TABLE IF NOT EXISTS `$table_name` (
                               `id` int(11) NOT NULL AUTO_INCREMENT,
-                              `field1` varchar(40) NOT NULL,
-                              `field2` varchar(40) NOT NULL,
-                              `field3` varchar(40) NOT NULL,
-                              `field4` varchar(40) NOT NULL,
-                              `field5` varchar(40) NOT NULL,                            
+                              `cycle` int NOT NULL,
+                              `day` int NOT NULL,
+                              `pair` int NOT NULL,
+                              `subject` text NOT NULL,
+                              `subject_type` text NOT NULL,                            
+                              `groups` text NOT NULL,                            
+                              `flats` text NULL,                            
+                              `tutors` text NULL,                            
                               PRIMARY KEY (`id`)
                             ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
 
-                    dbDelta($sql);
-                    echo '<div id="message" class="updated fade"><p><strong>Каталог обновлен.</strong></p></div>';
-                }
-
-                $file = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/catalog/CatalogPard.' . $info['extension']);
-                if ($file) {
-                    $strings = explode("\n", $file); // построчно разбиваем фаил
-                    for ($i = 0; $i < (count($strings) - 1); $i++) {//из каждой строки вырезаем значения полей
-                        if ($found = explode(";", iconv("WINDOWS-1251", "UTF-8", $strings[$i]))) {
-                            //записываем их в базу
-                            $sql = 'INSERT INTO `' . $table_name . '` VALUES("","' . $found[0] . '","' . $found[1] . '","' . $found[2] . '","' . $found[3] . '","' . $found[4] . '");';
-                            dbDelta($sql);
-                        }
+                        dbDelta($sql);
+                        echo '<div id="message" class="updated fade"><p><strong>Рассписание обновлено.</strong></p></div>';
                     }
 
 
-                } else echo "Не найден указаный CSV фаил! <font color='blue'>" . $_SERVER['DOCUMENT_ROOT'] . '/catalog/CatalogPard.' . $info['extension'] . "</font>";
 
+                    for ($i = 100; $i < count($lessons); $i++) {
+                        $lesson = $lessons[$i];
+                        foreach ($lesson as $key => $value) {
+                            switch ($key) {
+                                case 'Cycle': {
+                                    $cycle = $value["@attributes"]["Index"];
+                                    break;
+                                }
+                                case 'Day': {
+                                    $day = $value["@attributes"]["Index"];
+                                    break;
+                                }
+                                case 'Pair': {
+                                    $pair = $value["@attributes"]["Index"];
+                                    break;
+                                }
+                                case 'Subject': {
+                                    $subject = $value["@attributes"]["Text"];
+                                    break;
+                                }
+                                case 'SubjectType': {
+                                    $subjectType = $value["@attributes"]["Text"];
+                                    break;
+                                }
+                                case 'Groups': {
+                                    $groups = '';
+                                    if (count($value['Group'])) {
+                                        foreach ($value['Group'] as $group) {
+                                            $groups .= $group['@attributes']['Text']. " | ";
+                                        }
+                                    } else {
+                                        $groups = $value[0]['@attributes']['Text'];
+                                    }
+
+                                    break;
+                                }
+                                case 'Flats': {
+                                    $flats = '';
+                                    if (count($value['Flat'])) {
+                                        foreach ($value['Flat'] as $flat) {
+                                            $flats .= $flat['@attributes']['Text']. " | ";
+                                        }
+                                    } else {
+                                        $flats = $value[0]['@attributes']['Text'];
+                                    }
+
+                                    break;
+                                }
+                                case 'Tutors': {
+                                    $tutors = '';
+                                    if (count($value['Tutor'])) {
+                                        foreach ($value['Tutor'] as $tutor) {
+                                            $tutors .= $tutor['@attributes']['Text']. " | ";
+                                        }
+                                    } else {
+                                        $tutors = $value[0]['@attributes']['Text'];
+                                    }
+
+                                    break;
+                                }
+                            }
+                        }
+
+                        $sql = 'INSERT INTO `' . $table_name . '` VALUES("","' . $cycle . '","' . $day . '","' . $pair . '","' . $subject . '","' . $subjectType . '","' . $groups . '","' . $flats . '","' . $tutors . '");';
+                        dbDelta($sql);
+                        if ($key == 125) {
+                            echo "Все збс.";
+                            exit;
+                        }
+                    }
+                }
             } else echo "Неудалось передать указаный фаил.";
         } else $error = "<font color='red'>Фаил не загружен!</font> Возможно вы не указали какой фаил хотите загрузить.";
     }
