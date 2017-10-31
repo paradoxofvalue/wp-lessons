@@ -128,6 +128,25 @@ add_action('admin_menu', 'khLess_options_page');
  */
 function khLess_options_page_html()
 {
+    ?>
+    <div class="wrap">
+        <h2>Расписание </h2>
+        <form method="post" action="" enctype="multipart/form-data">
+            <h3>Выполнить загрузку расписания</h3>
+            <em>Для обновления расписание, выберите фаил с расширением <font color="blue">.xml</font>, расположенного на
+                вашем компьютере.<em/>
+                <br/>
+                <br/><input type="file" name="file"/>
+                <br/>
+                <br/>
+                <input type="submit" name="open_file" value="Загрузить каталог"/>
+                <br/>
+                <br/>
+                <?= $error ?: '' ?>
+        </form>
+    </div>
+
+    <?php
     global $wpdb;
     if ($_REQUEST['open_file']) {
         //если нажата кнопка "загрузить каталог"
@@ -139,7 +158,6 @@ function khLess_options_page_html()
                 require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 
 
-
                 $file = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/wordpress/schedule.' . $info['extension'], true);
 
                 if ($file) {
@@ -148,11 +166,9 @@ function khLess_options_page_html()
                     $array = json_decode($json, TRUE);
                     $lessons = $array['Lesson'];
 
-                    $groupsToOptions = [];
-                    $flatsToOptions = [];
-                    $tutorsToOptions = [];
 
                     $table_name = $wpdb->prefix . "schedule";
+
 
                     $sql = "DROP TABLE `" . $table_name . "`";
                     $wpdb->query($sql);
@@ -175,8 +191,7 @@ function khLess_options_page_html()
                     }
 
 
-
-                    for ($i = 0; $i < count($lessons); $i++) {
+                    for ($i = 100; $i < count($lessons); $i++) {
                         $lesson = $lessons[$i];
                         foreach ($lesson as $key => $value) {
                             switch ($key) {
@@ -204,18 +219,10 @@ function khLess_options_page_html()
                                     $groups = '';
                                     if (count($value['Group'])) {
                                         foreach ($value['Group'] as $group) {
-                                            $groupName = $group['@attributes']['Text'];
-                                            if (!in_array($groupName, $groupsToOptions)) {
-                                                array_push($groupsToOptions, $groupName);
-                                            }
-                                            $groups .= $groupName . " | ";
+                                            $groups .= $group['@attributes']['Text'] . " | ";
                                         }
                                     } else {
-                                        $groupName = $value[0]['@attributes']['Text'];
-                                        if (!in_array($groupName, $groupsToOptions)) {
-                                            array_push($groupsToOptions, $groupName);
-                                        }
-                                        $groups = $groupName;
+                                        $groups = $value[0]['@attributes']['Text'];
                                     }
 
                                     break;
@@ -224,18 +231,10 @@ function khLess_options_page_html()
                                     $flats = '';
                                     if (count($value['Flat'])) {
                                         foreach ($value['Flat'] as $flat) {
-                                            $flatName = $flat['@attributes']['Text'];
-                                            if (!in_array($flatName, $flatsToOptions)) {
-                                                array_push($flatsToOptions, $flatName);
-                                            }
-                                            $flats .= $flatName . " | ";
+                                            $flats .= $flat['@attributes']['Text'] . " | ";
                                         }
                                     } else {
-                                        $flatName = $value[0]['@attributes']['Text'];
-                                        if (!in_array($flatName, $flatsToOptions)) {
-                                            array_push($flatsToOptions, $flatName);
-                                        }
-                                        $flats = $flatName;
+                                        $flats = $value[0]['@attributes']['Text'];
                                     }
 
                                     break;
@@ -244,78 +243,47 @@ function khLess_options_page_html()
                                     $tutors = '';
                                     if (count($value['Tutor'])) {
                                         foreach ($value['Tutor'] as $tutor) {
-                                            $tutorName = $tutor['@attributes']['Text'];
-                                            if (!in_array($tutorName, $tutorsToOptions)) {
-                                                array_push($tutorsToOptions, $tutorName);
-                                            }
-                                            $tutors .= $tutorName . " | ";
+                                            $tutors .= $tutor['@attributes']['Text'] . " | ";
                                         }
                                     } else {
-                                        $tutorName = $value[0]['@attributes']['Text'];
-                                        if (!in_array($tutorName, $tutorsToOptions)) {
-                                            array_push($tutorsToOptions, $tutorName);
-                                        }
-                                        $tutors = $tutorName;
+                                        $tutors = $value[0]['@attributes']['Text'];
                                     }
 
                                     break;
                                 }
                             }
                         }
-                        $subject = htmlspecialchars_decode($subject);
-                        $subjectType = htmlspecialchars_decode($subjectType);
-                        $groups = htmlspecialchars_decode($groups);
-                        $flats = htmlspecialchars_decode($flats);
-                        $tutors = htmlspecialchars_decode($tutors);
 
                         $sql = 'INSERT INTO `' . $table_name . '` VALUES("","' . $cycle . '","' . $day . '","' . $pair . '","' . $subject . '","' . $subjectType . '","' . $groups . '","' . $flats . '","' . $tutors . '");';
                         dbDelta($sql);
-
-                        if ($i == 100) {
-                            break;
+                        if ($key == 125) {
+                            echo "Все збс.";
+                            exit;
                         }
-
                     }
-                    $groupsToOptions = json_encode($groupsToOptions);
-                    $flatsToOptions = json_encode($flatsToOptions);
-                    $tutorsToOptions = json_encode($tutorsToOptions);
-                    if (get_option("lessonPluginGroups")) {
-                        update_option("lessonPluginGroups", $groupsToOptions);
-                    } else {
-                        add_option("lessonPluginGroups", $groupsToOptions);
-                    }
-                    if (get_option("lessonPluginFlats")) {
-                        update_option("lessonPluginFlats", $flatsToOptions);
-                    } else {
-                        add_option("lessonPluginFlats", $flatsToOptions);
-                    }
-                    if (get_option("lessonPluginTutors")) {
-                        update_option("lessonPluginTutors", $tutorsToOptions);
-                    } else {
-                        add_option("lessonPluginTutors", $tutorsToOptions);
-                    }
-
+                }
             } else echo "Неудалось передать указаный фаил.";
         } else $error = "<font color='red'>Фаил не загружен!</font> Возможно вы не указали какой фаил хотите загрузить.";
     }
-    ?>
-    <div class="wrap">
-        <h2>Расписание </h2>
-        <form method="post" action="" enctype="multipart/form-data">
-            <h3>Выполнить загрузку расписания</h3>
-            <em>Для обновления расписание, выберите фаил с расширением <font color="blue">.xml</font>, расположенного на
-                вашем компьютере.<em/>
-                <br/>
-                <br/><input type="file" name="file"/>
-                <br/>
-                <br/>
-                <input type="submit" name="open_file" value="Загрузить каталог"/>
-                <br/>
-                <br/>
-                <?= $error ?>
-        </form>
-    </div>
-    <?php
 }
+
+function ajax_action_stuff() {
+
+    echo 'ajax submitted';
+    die(); // stop executing script
+}
+add_action( 'wp_ajax_ajax_action', 'ajax_action_stuff' ); // ajax for logged in users
+add_action( 'wp_ajax_nopriv_ajax_action', 'ajax_action_stuff' ); // ajax for not logged in users
+
+function enqueue_scripts_styles_init() {
+//    wp_enqueue_script( 'ajax-script', get_template_directory_uri().'/js/script.js', array('jquery'), 1.0 ); // jQuery will be included automatically
+    wp_enqueue_script( 'ajax-script', plugins_url( '/js/script.js', __FILE__ ) ); // jQuery will be included automatically
+    // get_template_directory_uri() . '/js/script.js'; // Inside a parent theme
+    // get_stylesheet_directory_uri() . '/js/script.js'; // Inside a child theme
+    // plugins_url( '/js/script.js', __FILE__ ); // Inside a plugin
+    wp_localize_script( 'ajax-script', 'ajax_object', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) ); // setting ajaxurl
+}
+add_action('init', 'enqueue_scripts_styles_init');
+
 
 ?>
