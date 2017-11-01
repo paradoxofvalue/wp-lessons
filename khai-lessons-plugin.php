@@ -14,10 +14,7 @@ function khLess_shortcodes_init()
 {
     function khLess_shortcode($atts = [], $content = null)
     {
-        // do something to $content
-
-        // always return
-        return '<h1>My Dick is big</h1>';
+        get_template_part( 'template', 'schedule' );
     }
 
     add_shortcode('khLess', 'khLess_shortcode');
@@ -26,14 +23,6 @@ function khLess_shortcodes_init()
 add_action('init', 'khLess_shortcodes_init');
 
 
-/**
- * @internal never define functions inside callbacks.
- * these functions could be run multiple times; this would result in a fatal error.
- */
-
-/**
- * custom option and settings
- */
 function khLess_settings_init()
 {
     // register a new setting for "khLess" page
@@ -63,31 +52,8 @@ function khLess_settings_init()
     );
 }
 
-/**
- * register our khLess_settings_init to the admin_init action hook
- */
 add_action('admin_init', 'khLess_settings_init');
 
-/**
- * custom option and settings:
- * callback functions
- */
-
-// developers section cb
-
-// section callbacks can accept an $args parameter, which is an array.
-// $args have the following keys defined: title, id, callback.
-// the values are defined at the add_settings_section() function.
-
-
-// pill field cb
-
-// field callbacks can accept an $args parameter, which is an array.
-// $args is defined at the add_settings_field() function.
-// wordpress has magic interaction with the following keys: label_for, class.
-// the "label_for" key value is used for the "for" attribute of the <label>.
-// the "class" key value is used for the "class" attribute of the <tr> containing the field.
-// you can add custom key value pairs to be used inside your callbacks.
 function khLess_field_pill_cb($args)
 {
     // get the value of the setting we've registered with register_setting()
@@ -102,9 +68,6 @@ function khLess_field_pill_cb($args)
     <?php
 }
 
-/**
- * top level menu
- */
 function khLess_options_page()
 {
     // add top level menu page
@@ -117,15 +80,8 @@ function khLess_options_page()
     );
 }
 
-/**
- * register our khLess_options_page to the admin_menu action hook
- */
 add_action('admin_menu', 'khLess_options_page');
 
-/**
- * top level menu:
- * callback functions
- */
 function khLess_options_page_html()
 {
     ?>
