@@ -5,15 +5,15 @@ var schedule = {
     },
     options: {
         schedule: '#schedule',
-        breaks: [5,5,10,20,10,20,10,5,5], // breaks duration
+        breaks: [5,15,5,30,5,15,5,15,5], // breaks duration
         s_breaks: [475,525, 575, 630, 695, 750, 815, 870, 920], // the time after which the break begins
         lesson_time: 45, // lesson duration (minutes)
-        lessons: 9, // number of lessons per week
+        lessons: 5, // number of lessons per week
         start: function(){ // start at 7.10
-            return schedule.general.toMin(7,10)
+            return schedule.general.toMin(7,55)
         },
         end: function(){ // start at 16.10
-            return schedule.general.toMin(16,10)
+            return schedule.general.toMin(19,0)
         },
         h_width: $('.s-hour-row').width(), // get a width of hour div
         minToPx: function(){ // divide the box width by the duration of one lesson
@@ -71,9 +71,9 @@ var schedule = {
                hours: "7.10-16.10" << remove all activities from a choosed hours
             */
             function finalize(message){
-                if(confirm(message)){
+                // if(confirm(message)){
                     return true;
-                }
+                // }
             }
 
             if(week && !hours){
