@@ -9,12 +9,6 @@ body {
     margin: 0;
 }
 
-.lessons-wrapper {
-    position: relative;
-    display: flex;
-    height: 450px;
-}
-
 .centered {
     font-family: "Roboto", sans-serif;
     position: absolute;
@@ -173,7 +167,8 @@ body {
     font-size: 7px;
     color: white;
     position: absolute;
-    margin: 5px;
+    /*margin: 5px;*/
+    margin: 0px;
 }
 .s-container .s-rows-container .s-activities .s-act-row .s-act-tab .s-act-group {
     bottom: 0;

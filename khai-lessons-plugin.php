@@ -155,6 +155,25 @@ function khLess_options_page_html()
                         $lesson = $lessons[$i];
                         foreach ($lesson as $key => $value) {
                             switch ($key) {
+                                case 'Groups': {
+                                    $groups = '';
+                                    if (count($value['Group'])) {
+                                        foreach ($value['Group'] as $group) {
+                                            $groups .= $group['@attributes']['Text'] . " | ";
+
+                                            if (!in_array($group['@attributes']['Text'], $groupsToOptions)) {
+                                                array_push($groupsToOptions, $group['@attributes']['Text']);
+                                            }
+                                        }
+                                    } else {
+                                        $groups = $value[0]['@attributes']['Text'];
+                                        if (!in_array($groups, $groupsToOptions)) {
+                                            array_push($groupsToOptions, $groups);
+                                        }
+                                    }
+
+                                    break;
+                                }
                                 case 'Cycle': {
                                     $cycle = $value["@attributes"]["Index"];
                                     break;
@@ -176,25 +195,6 @@ function khLess_options_page_html()
                                 }
                                 case 'SubjectType': {
                                     $subjectType = $value["@attributes"]["Text"];
-                                    break;
-                                }
-                                case 'Groups': {
-                                    $groups = '';
-                                    if (count($value['Group'])) {
-                                        foreach ($value['Group'] as $group) {
-                                            $groups .= $group['@attributes']['Text'] . " | ";
-
-                                            if (!in_array($group['@attributes']['Text'], $groupsToOptions)) {
-                                                array_push($groupsToOptions, $group['@attributes']['Text']);
-                                            }
-                                        }
-                                    } else {
-                                        $groups = $value[0]['@attributes']['Text'];
-                                        if (!in_array($groups, $groupsToOptions)) {
-                                            array_push($groupsToOptions, $groups);
-                                        }
-                                    }
-
                                     break;
                                 }
                                 case 'Flats': {
